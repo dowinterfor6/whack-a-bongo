@@ -4,8 +4,6 @@ const merge = require('webpack-merge');
 const babelLoader = require('./babelLoader');
 
 module.exports = env => {
-  // const isDevelopment = env === "development";
-  // console.log(`This is a ${isDevelopment ? "development" : "production"} build`);
   const isDevelopment = env.development;
   console.log(`This is a ${isDevelopment ? "development" : "production"} build`);
 
