@@ -105,7 +105,7 @@ manager.onLoad = function () {
 
   const leftBongoCatGeometry = new THREE.PlaneGeometry(50, 50);
   const leftBongoCatMaterial = new THREE.MeshLambertMaterial({
-    map: textureLoader.load('/assets/images/bongoCatPawUp.png'),
+    map: textureLoader.load('assets/images/bongoCatPawUp.png'),
     transparent: true
   });
   const leftBongoCat = new THREE.Mesh(leftBongoCatGeometry, leftBongoCatMaterial);
@@ -114,7 +114,7 @@ manager.onLoad = function () {
 
   const rightBongoCatGeometry = new THREE.PlaneGeometry(50, 50);
   const rightBongoCatMaterial = new THREE.MeshLambertMaterial({
-    map: textureLoader.load('/assets/images/bongoCatPawDown.png'),
+    map: textureLoader.load('assets/images/bongoCatPawDown.png'),
     transparent: true
   });
   const rightBongoCat = new THREE.Mesh(rightBongoCatGeometry, rightBongoCatMaterial);
@@ -124,7 +124,7 @@ manager.onLoad = function () {
   // Chickens
   const chickenSteppedOnGeometry = new THREE.PlaneGeometry(20, 20);
   const chickenSteppedOnMaterial = new THREE.MeshLambertMaterial({
-    map: textureLoader.load('/assets/images/chickenSteppedOn.png'),
+    map: textureLoader.load('assets/images/chickenSteppedOn.png'),
     transparent: true
   });
 
@@ -317,11 +317,11 @@ function attachClickEventListener() {
   // Hammer, maybe make this with JS/CSS/HTML instead
   const hammerGeometry = new THREE.PlaneGeometry(25, 25);
   const hammerUpMaterial = new THREE.MeshLambertMaterial({
-    map: textureLoader.load("/assets/images/hammerUp.png"),
+    map: textureLoader.load("assets/images/hammerUp.png"),
     transparent: true
   });
   const hammerDownMaterial = new THREE.MeshLambertMaterial({
-    map: textureLoader.load("/assets/images/hammerDown.png"),
+    map: textureLoader.load("assets/images/hammerDown.png"),
     transparent: true
   });
 
