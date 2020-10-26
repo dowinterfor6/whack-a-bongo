@@ -101,7 +101,7 @@ manager.onLoad = function () {
   // BongoCats
   const catsXOffset = 34;
 
-  console.log('/')
+  console.log("test")
 
   const leftBongoCatGeometry = new THREE.PlaneGeometry(50, 50);
   const leftBongoCatMaterial = new THREE.MeshLambertMaterial({
