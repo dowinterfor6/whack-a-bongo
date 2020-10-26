@@ -1,9 +1,9 @@
-import * as THREE from "../node_modules/three/build/three.module.js";
+import * as THREE from "three";
 
 // Width, height, depth
 const createHole = (width, height, depth, color) => {
   const geometry = new THREE.BoxGeometry(width, height, depth);
-  const material = new THREE.MeshBasicMaterial( { color } );
+  const material = new THREE.MeshLambertMaterial( { color } );
   return new THREE.Mesh( geometry, material );
 }
 

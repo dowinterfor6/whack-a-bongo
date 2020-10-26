@@ -1,17 +1,17 @@
 import { gsap } from 'gsap';
 
-const toggleBongo = (bongo, travelDist, popUpTime) => {
-  const { x, y, z } = bongo.position;
+const toggleChicken = (chicken, travelDist, popUpTime) => {
+  const { x, y, z } = chicken.position;
   const animDuration = 0.5;
 
-  gsap.to(bongo.position, {
+  gsap.to(chicken.position, {
     duration: animDuration,
     y: y + travelDist,
     ease: "expo.out"
   })
   
   window.setTimeout(() => {
-    gsap.to(bongo.position, {
+    gsap.to(chicken.position, {
       duration: animDuration,
       y: y,
       ease: "expo.out"
@@ -19,8 +19,8 @@ const toggleBongo = (bongo, travelDist, popUpTime) => {
   }, popUpTime);
 
   window.setTimeout(() => {
-    bongo.geometry.isHit = false;
+    chicken.geometry.isHit = false;
   }, popUpTime + animDuration * 1000);
 }
 
-export default toggleBongo;
+export default toggleChicken;

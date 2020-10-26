@@ -1,10 +1,10 @@
-import * as THREE from "../node_modules/three/build/three.module.js";
+import * as THREE from "three";
 
 const createBongo = (width, height, depth, color) => {
   // Placeholder
   const geometry = new THREE.BoxGeometry(width, height, depth);
-  geometry.bongo = true;
-  const material = new THREE.MeshBasicMaterial( { color } );
+  geometry.isBongo = true;
+  const material = new THREE.MeshLambertMaterial( { color } );
   return new THREE.Mesh( geometry, material );
 }
 

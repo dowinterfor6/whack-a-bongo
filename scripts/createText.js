@@ -1,4 +1,4 @@
-import * as THREE from "../node_modules/three/build/three.module.js";
+import * as THREE from "three";
 
 const createText = (text, font, size, height, color) => {
   const geometry = new THREE.TextGeometry( text, {
@@ -14,7 +14,7 @@ const createText = (text, font, size, height, color) => {
   } );
   geometry.center();
   geometry.text = text;
-  const material = new THREE.MeshBasicMaterial( { color } );
+  const material = new THREE.MeshLambertMaterial( { color } );
   return new THREE.Mesh(geometry, material);
 }
 

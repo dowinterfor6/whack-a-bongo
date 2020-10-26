@@ -1,11 +1,11 @@
 import * as THREE from "three";
 
-// Width, height, depth
-// 7*9 = 63, 50, 9*9 = 81
-const createBox = (width, height, depth, color) => {
+const createChicken = (width, height, depth, color) => {
+  // Placeholder
   const geometry = new THREE.BoxGeometry(width, height, depth);
+  geometry.isChicken = true;
   const material = new THREE.MeshLambertMaterial( { color } );
   return new THREE.Mesh( geometry, material );
 }
 
-export default createBox;
+export default createChicken;
