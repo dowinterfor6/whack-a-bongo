@@ -9,11 +9,23 @@ const toggleBongo = (bongo, travelDist, popUpTime) => {
     y: y + travelDist,
     ease: "expo.out"
   })
+
+  gsap.to(bongo.material, {
+    duration: animDuration,
+    opacity: 1,
+    ease: "expo.out"
+  })
   
   window.setTimeout(() => {
     gsap.to(bongo.position, {
       duration: animDuration,
       y: y,
+      ease: "expo.out"
+    })
+
+    gsap.to(bongo.material, {
+      duration: animDuration,
+      opacity: 0,
       ease: "expo.out"
     })
   }, popUpTime);

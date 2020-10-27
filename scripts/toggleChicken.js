@@ -9,11 +9,23 @@ const toggleChicken = (chicken, travelDist, popUpTime) => {
     y: y + travelDist,
     ease: "expo.out"
   })
+
+  gsap.to(chicken.material, {
+    duration: animDuration,
+    opacity: 1,
+    ease: "expo.out"
+  })
   
   window.setTimeout(() => {
     gsap.to(chicken.position, {
       duration: animDuration,
       y: y,
+      ease: "expo.out"
+    })
+
+    gsap.to(chicken.material, {
+      duration: animDuration,
+      opacity: 0,
       ease: "expo.out"
     })
   }, popUpTime);
