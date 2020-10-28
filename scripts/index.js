@@ -10,14 +10,15 @@ import GLTFLoader from 'three-gltf-loader';
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
 const raycaster = new THREE.Raycaster();
+const mouseRaycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 const manager = new THREE.LoadingManager();
 const fontLoader = new THREE.FontLoader(manager);
 const textureLoader = new THREE.TextureLoader();
 const modelLoader = new GLTFLoader(manager);
 
-// const axesHelper = new THREE.AxesHelper( 100 );
-// scene.add( axesHelper );
+const axesHelper = new THREE.AxesHelper( 100 );
+scene.add( axesHelper );
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize( window.innerWidth, window.innerHeight );
@@ -116,15 +117,16 @@ manager.onLoad = function () {
   scene.add(rightBongoCat);
 
   // Chickens
-  const chickenSteppedOnGeometry = new THREE.PlaneGeometry(20, 20);
+  const chickenSteppedOnGeometry = new THREE.PlaneGeometry(16, 16);
   const chickenSteppedOnMaterial = new THREE.MeshLambertMaterial({
-    map: textureLoader.load('assets/images/chickenSteppedOn.png'),
+    map: textureLoader.load('assets/images/noQuaver.png'),
     transparent: true
   });
 
   for (const chickenX of chickensX) {
     const chickenSteppedOn = new THREE.Mesh(chickenSteppedOnGeometry, chickenSteppedOnMaterial);
-    chickenSteppedOn.position.set(chickenX, boxDimensions.height + 12.5, -boxDimensions.y - 2);
+    // Why doesn't this do anything anymore?
+    chickenSteppedOn.position.set(chickenX, boxDimensions.height - 10, -boxDimensions.y - 2);
     chickenTexts.push(chickenSteppedOn);
   }
 
@@ -133,9 +135,9 @@ manager.onLoad = function () {
   })
 
   // Game over text
-  gameRestartText = createText("Game over!", helveticaFont, 10, scoreTextSize, scoreTextColor);
-  gameRestartText.position.set(0, boxDimensions.height + 12.5, -boxDimensions.y - 2);
-  scene.add(gameRestartText);
+  // gameRestartText = createText("Game over!", helveticaFont, 10, scoreTextSize, scoreTextColor);
+  // gameRestartText.position.set(0, boxDimensions.height + 12.5, -boxDimensions.y - 2);
+  // scene.add(gameRestartText);
 
   // Attach event listener for click
   attachClickEventListener();
@@ -158,31 +160,70 @@ const bongos = [];
 const bongoDimensions = { w: 13, h: 13, d: 13 };
 const travelDist = bongoDimensions.h;
 
-xyPos.forEach(({ x, z }) => {
-  const bongo = createBongo(bongoDimensions.w, bongoDimensions.h, bongoDimensions.d, 0x00ff00);
-  bongo.position.set(x, boxDimensions.height / 2 + boxCenter.y + 1 - travelDist, z);
-  bongo.material.opacity = 0;
-  bongos.push(bongo);
-  scene.add(bongo);
+// xyPos.forEach(({ x, z }) => {
+//   const bongo = createBongo(bongoDimensions.w, bongoDimensions.h, bongoDimensions.d, 0x00ff00);
+//   bongo.position.set(x, boxDimensions.height / 2 + boxCenter.y + 1 - travelDist, z);
+//   bongo.material.opacity = 0;
+//   bongos.push(bongo);
+//   scene.add(bongo);
+// })
+
+const chickens = [];
+
+let bongoModel;
+modelLoader.load("assets/blender/Bongo.glb", (bongoScene) => {
+  bongoModel = bongoScene.scene.children.filter(({userData}) => userData.name === "Bongo")[0];
+
+  xyPos.forEach(({ x, z }) => {
+    const bongo = bongoModel.clone(true);
+    // const bongo = new THREE.Mesh(bongoModel.geometry.clone(), bongoModel.material.clone());
+    bongo.geometry.isBongo = true;
+    bongo.geometry.isHit = true;
+    bongo.position.set(x, boxDimensions.height / 2 + boxCenter.y + 1 - travelDist, z);
+    bongo.visible = false;
+    bongo.scale.set(100, 100, 100);
+    bongos.push(bongo);
+    scene.add(bongo);
+  })
+})
+
+let chickenModel;
+modelLoader.load("assets/blender/Chicken.glb", (chickenScene) => {
+  chickenModel = chickenScene.scene.children.filter(({userData}) => userData.name === "Bongo")[0];
+
+  xyPos.forEach(({ x, z }) => {
+    // This is extremely inefficient, but will make do for now
+    const chicken = chickenModel.clone(true);
+    // const chicken = new THREE.Mesh(chickenModel.geometry.clone(), chickenModel.material.clone());
+    chicken.geometry.isChicken = true;
+    chicken.geometry.isHit = true;
+    chicken.position.set(x, boxDimensions.height / 2 + boxCenter.y + 1 - travelDist, z);
+    chicken.visible = false;
+    chicken.scale.set(100, 100, 100);
+    // chicken.rotateZ(Math.PI);
+    chickens.push(chicken);
+    scene.add(chicken);
+  })
 })
 
 // Chickens
-const chickens = [];
-const chickenDimensions = { w: 13, h: 13, d: 13 };
+// const chickens = [];
+// const chickenDimensions = { w: 13, h: 13, d: 13 };
 
-xyPos.forEach(({ x, z }) => {
-  const chicken = createChicken(chickenDimensions.w, chickenDimensions.h, chickenDimensions.d, 0xff1111);
-  chicken.position.set(x, boxDimensions.height / 2 + boxCenter.y + 1 - travelDist, z);
-  chicken.material.opacity = 0;
-  chickens.push(chicken);
-  scene.add(chicken);
-})
+// xyPos.forEach(({ x, z }) => {
+//   const chicken = createChicken(chickenDimensions.w, chickenDimensions.h, chickenDimensions.d, 0xff1111);
+//   chicken.position.set(x, boxDimensions.height / 2 + boxCenter.y + 1 - travelDist, z);
+//   chicken.material.opacity = 0;
+//   chickens.push(chicken);
+//   scene.add(chicken);
+// })
 
 // Camera
+const cameraLookPos = new THREE.Vector3(0, boxDimensions.height - 5, -boxDimensions.y + 25);
 // camera.position.set(0, 125, 25);
 camera.position.set(0, 140, 20);
 // camera.lookAt(0, 0, boxCenter.z);
-camera.lookAt(0, boxDimensions.height - 5, -boxDimensions.y + 25);
+camera.lookAt(cameraLookPos);
 
 const popUpTime = 750;
 let state = {
@@ -198,13 +239,12 @@ function animate() {
     if (state.chickensHit === 3) {
       state.activeGame = false;
       state.prepareGame = true;
-      displayGameOver();
+      // displayGameOver();
     } else {
       activateBongo();
       activateChicken();
     }
   } else if (state.prepareGame) {
-    resetChickens();
     placeStarterBongo();
     state.prepareGame = false;
   }
@@ -219,27 +259,34 @@ function placeStarterBongo() {
   const { x, y, z } = bongo.position;
   const animDuration = 0.5;
   const initY = boxDimensions.height / 2 + boxCenter.y + 1 - travelDist;
+  
+  // To prevent any existing gsap animation to conflict
+  window.setTimeout(() => {
+    bongo.position.setY(initY);
+    
+    bongo.visible = true;
+    
+    gsap.to(bongo.position, {
+      duration: animDuration,
+      y: y + travelDist,
+      ease: "expo.out"
+    }).delay(1).then(() => {
+      bongo.geometry.isHit = false;
+    })
+  }, popUpTime);
 
-  bongo.position.setY(initY);
-
-  gsap.to(bongo.position, {
-    duration: animDuration,
-    y: y + travelDist,
-    ease: "expo.out"
-  }).delay(1);
-
-  gsap.to(bongo.material, {
-    duration: animDuration,
-    opacity: 1,
-    ease: "expo.out"
-  }).delay(1);
+  // gsap.to(bongo.material, {
+  //   duration: animDuration,
+  //   opacity: 1,
+  //   ease: "expo.out"
+  // }).delay(1);
 }
 
 let activeHoleIdx = [];
 
 function activateBongo() {
   const rand = Math.round(Math.random() * 1000);
-  if (rand % 200 === 0) {
+  if (rand % 100 === 0) {
     let randIdx = Math.round(Math.random() * (bongos.length - 1));
     while (activeHoleIdx.includes(randIdx)) {
       randIdx = Math.round(Math.random() * (bongos.length - 1));
@@ -257,7 +304,7 @@ function activateBongo() {
 
 function activateChicken() {
   const rand = Math.round(Math.random() * 1000);
-  if (rand % 400 === 0) {
+  if (rand % 300 === 0) {
     let randIdx = Math.round(Math.random() * (chickens.length - 1));
     while (activeHoleIdx.includes(randIdx)) {
       randIdx = Math.round(Math.random() * (chickens.length - 1));
@@ -279,13 +326,13 @@ function incrementScore(oldScore) {
   scene.add(scoreText);
 }
 
-function displayGameOver() {
-  gameRestartText.position.set(0, boxDimensions.height + 12.5, -boxDimensions.y);
-}
+// function displayGameOver() {
+//   gameRestartText.position.set(0, boxDimensions.height + 12.5, -boxDimensions.y);
+// }
 
-function resetGameOver() {
-  gameRestartText.position.set(0, boxDimensions.height + 12.5, -boxDimensions.y - 2);
-}
+// function resetGameOver() {
+//   gameRestartText.position.set(0, boxDimensions.height + 12.5, -boxDimensions.y - 2);
+// }
 
 function resetChickens() {
   chickenTexts.forEach((chicken, idx) => {
@@ -326,7 +373,7 @@ function attachClickEventListener() {
   // scene.add(mouseUpMesh);
   // scene.add(mouseDownMesh);
   scene.add(mallet);
-  mallet.scale.set(50, 50, 50);
+  mallet.scale.set(100, 100, 100);
   mallet.rotateX(Math.PI / 8);
   mallet.rotateY(-3 * Math.PI / 16);
   mallet.rotateZ(-Math.PI / 8);
@@ -347,20 +394,64 @@ function attachClickEventListener() {
     
     // Make it locked to zx plane
     // Window plane, e.g. yx plane
-    const vector = new THREE.Vector3(mouse.x, mouse.y, 0);
+    const vector = new THREE.Vector3(mouse.x, mouse.y, ( camera.near + camera.far ) / ( camera.near - camera.far ));
     // console.log("vector: ", vector);
     // Position of vector in the world
     // Use known camera position vector (position and look at)
     vector.unproject( camera );
+    // console.log("Unproject vector: ", vector);
+    // const vectorToCamLook = vector.clone().add(cameraVector);
+    // console.log("vectorToCam: ", vectorToCamLook);
+    // console.log("Camera vector: ", cameraVector);
+    // console.log("vector normalize", vectorToCamLook.clone().normalize());
+
+    // Draw a line from pointA in the given direction at distance 100
+    // var pointA = vector.clone();
+    // var direction = vectorToCamLook.clone();
+    // direction.normalize();
+
+    // var distance = 100; // at what distance to determine pointB
+
+    // var pointB = new THREE.Vector3();
+    // pointB.addVectors ( pointA, direction.multiplyScalar( distance ) );
+
+    // var geometry = new THREE.Geometry();
+    // geometry.vertices.push( pointA );
+    // geometry.vertices.push( pointB );
+    // var material = new THREE.LineBasicMaterial( { color : 0xff0000 } );
+    // var line = new THREE.Line( geometry, material );
+    // console.log(pointB);
+    // scene.add( line );
+
+    // const mouseRay = new THREE.Ray(vector, vectorToCamLook.clone().normalize());
+
+    // const xzPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+
+    // const planeIntersect = mouseRay.intersectPlane(xzPlane, vector);
+    // console.log("Plane intersect: ", planeIntersect);
+
+
     // console.log("vector (unproject): ", vector);
-    const dir = vector.sub( camera.position ).normalize();
-    const distance = - camera.position.z / dir.z;
-    let pos = camera.position.clone().add( dir.multiplyScalar( distance ) );
+    // const dir = vector.sub( camera.position ).normalize();
+    // const distance = - camera.position.z / dir.z;
+    // let pos = camera.position.clone().add( dir.multiplyScalar( distance ) );
     // pos.y = 80;
-    mallet.position.copy(pos);
+    // mallet.position.copy(pos);
+    // scene.remove(machineModel);
+    // mallet.position.set(pointB.x, pointB.y, pointB.z);
+    // console.log(mallet.position);
     // mouseDownMesh.position.copy(pos);
+
+    const xzPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -boxDimensions.height - travelDist - 5);
+    raycaster.setFromCamera(mouse, camera);
+    const planeIntersect = raycaster.ray.intersectPlane(xzPlane, vector);
+    console.log(raycaster.ray.direction);
+    console.log("intersect: ", planeIntersect);
+    mallet.position.set(planeIntersect.x, planeIntersect.y, planeIntersect.z);
+    console.log(mallet.position);
   })
 
+  // Spam clicking will break the game (score), I'm not entirely sure why
   document.addEventListener("click", 
     (e) => {
       mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
@@ -368,8 +459,8 @@ function attachClickEventListener() {
 
       raycaster.setFromCamera(mouse, camera);
 
-      // const intersects = raycaster.intersectObject(scene.children);
       const intersects = raycaster.intersectObjects(scene.children).filter((intersect) => !intersect.object.geometry.isMouse);
+      // console.log(intersects.map((intersect) => intersect.object.geometry.isHit));
       if (intersects.length > 0) {
         const { object } = intersects[0];
         if (object.geometry.isBongo && !object.geometry.isHit && !object.geometry.startingBongo) {
@@ -378,10 +469,11 @@ function attachClickEventListener() {
           const oldScore = parseInt(scoreText.geometry.text);
           scene.remove(scoreText);
           incrementScore(oldScore);
-          object.material.color.setHex(0x00ffff);
-          window.setTimeout(() => {
-            object.material.color.setHex(0x00ff00);
-          }, 300);
+          // TODO: Add sound or something on successful hit
+          // object.material.color.setHex(0x00ffff);
+          // window.setTimeout(() => {
+          //   object.material.color.setHex(0x00ff00);
+          // }, 300);
         } else if (object.geometry.isChicken && !object.geometry.isHit && !object.geometry.startingBongo) {
           object.geometry.isHit = true;
           // Handle lose condition
@@ -389,35 +481,37 @@ function attachClickEventListener() {
           
           chickenTexts[state.chickensHit - 1].position.setZ(chickenTexts[state.chickensHit - 1].position.z + 4);
 
-          object.material.color.setHex(0xff0000);
-          window.setTimeout(() => {
-            object.material.color.setHex(0xff1111);
-          }, 300);
-        } else if(object.geometry.isBongo && object.geometry.startingBongo) {
+          // object.material.color.setHex(0xff0000);
+          // window.setTimeout(() => {
+          //   object.material.color.setHex(0xff1111);
+          // }, 300);
+        } else if(object.geometry.isBongo && !object.geometry.isHit && object.geometry.startingBongo) {
           object.geometry.isHit = true;
           object.geometry.startingBongo = false;
           const { x, y, z } = object.position;
           const animDuration = 0.5;
 
-          object.material.color.setHex(0x00ffff);
-          window.setTimeout(() => {
-            object.material.color.setHex(0x00ff00);
-          }, 300);
+          resetChickens();
+
+          // object.material.color.setHex(0x00ffff);
+          // window.setTimeout(() => {
+          //   object.material.color.setHex(0x00ff00);
+          // }, 300);
 
           gsap.to(object.position, {
             duration: animDuration,
             y: y - travelDist,
             ease: "expo.out"
-          });
+          }).then(() => object.visible = false);
 
-          gsap.to(object.material, {
-            duration: animDuration,
-            opacity: 0,
-            ease: "expo.out"
-          });
+          // gsap.to(object.material, {
+          //   duration: animDuration,
+          //   opacity: 0,
+          //   ease: "expo.out"
+          // });
 
           resetScore();
-          resetGameOver();
+          // resetGameOver();
 
           // Short delay before starting game
           window.setTimeout(() => {
