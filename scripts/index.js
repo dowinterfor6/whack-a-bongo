@@ -22,7 +22,7 @@ renderer.setSize( window.innerWidth, window.innerHeight );
 renderer.setClearColor("#e5e5e5");
 document.body.appendChild( renderer.domElement );
 
-console.log("Latest");
+console.log("v1.0.1");
 
 window.addEventListener("resize", () => {
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -31,7 +31,7 @@ window.addEventListener("resize", () => {
   camera.updateProjectionMatrix();
 })
 
-const light = new THREE.PointLight(0xffffff, 5, 500);
+const light = new THREE.PointLight(0xffffff, 4, 500);
 light.position.set(0, 200, 25);
 scene.add(light);
 
@@ -77,6 +77,13 @@ modelLoader.load("assets/blender/WhackAMoleMachine.glb", (machineScene) => {
 })
 
 manager.onLoad = function () {
+  // Remove loading screen
+  const loadingEl = document.getElementById("loadingEl");
+  loadingEl.classList.add("fade-out");
+  loadingEl.ontransitionend = () => {
+    loadingEl.remove();
+  }
+
   // Title
   const titleText = createText("Whack-a-Bongo", helveticaFont, 9, 1, 0xffffff);
   titleText.position.set(0, boxDimensions.height + 52, -boxDimensions.y);
@@ -143,7 +150,7 @@ const xyPos = [
 
 // Bongos
 const bongos = [];
-const bongoDimensions = { w: 13, h: 13, d: 13 };
+const bongoDimensions = { w: 15, h: 22, d: 15 };
 const travelDist = bongoDimensions.h;
 
 xyPos.forEach(({ x, z }) => {
@@ -190,7 +197,7 @@ modelLoader.load("assets/blender/ChickenSmoller.glb", (chickenScene) => {
 
 // Chickens
 const chickens = [];
-const chickenDimensions = { w: 13, h: 13, d: 13 };
+const chickenDimensions = { w: 15, h: 22, d: 15 };
 
 xyPos.forEach(({ x, z }) => {
   const chicken = createChicken(chickenDimensions.w, chickenDimensions.h, chickenDimensions.d, 0xff1111);
@@ -209,7 +216,8 @@ const popUpTime = 750;
 let state = {
   activeGame: false,
   prepareGame: true,
-  chickensHit: 0
+  chickensHit: 0,
+  gameOver: true
 }
 
 function animate() {
@@ -219,6 +227,7 @@ function animate() {
     if (state.chickensHit === 3) {
       state.activeGame = false;
       state.prepareGame = true;
+      state.gameOver = true;
     } else {
       activateBongo();
       activateChicken();
@@ -334,10 +343,30 @@ function resetScore() {
 function attachClickEventListener() {
   scene.add(mallet);
   mallet.scale.set(100, 100, 100);
-  mallet.rotateX(Math.PI / 8);
-  mallet.rotateY(-3 * Math.PI / 16);
-  mallet.rotateZ(-Math.PI / 8);
+  const PI = Math.PI;
 
+  const initialRotation = new THREE.Vector3(
+    PI / 4, 
+    -3 * PI / 8, 
+    0
+  )
+    
+  const clickedRotation = new THREE.Vector3(
+    PI / 8, 
+    -3 * PI / 8, 
+    0
+  )
+ 
+  mallet.rotation.setFromVector3(initialRotation);
+
+  document.addEventListener("mousedown", (e) => {
+    mallet.rotation.setFromVector3(clickedRotation);
+  })
+
+  document.addEventListener("mouseup", (e) => {
+    mallet.rotation.setFromVector3(initialRotation);
+  })
+  
   document.addEventListener("mousemove", (e) => {
     mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
     mouse.y = - (e.clientY / window.innerHeight) * 2 + 1;
@@ -345,7 +374,7 @@ function attachClickEventListener() {
     const vector = new THREE.Vector3(mouse.x, mouse.y, ( camera.near + camera.far ) / ( camera.near - camera.far ));
     vector.unproject( camera );
 
-    const xzPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -boxDimensions.height - travelDist - 5);
+    const xzPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -boxDimensions.height - travelDist - 14.5);
     raycaster.setFromCamera(mouse, camera);
     const planeIntersect = raycaster.ray.intersectPlane(xzPlane, vector);
 
@@ -362,23 +391,24 @@ function attachClickEventListener() {
       const intersects = raycaster.intersectObjects(scene.children).filter(({ object }) => !(object.geometry.isMouse || object.geometry.isDisplay));
       if (intersects.length > 0) {
         const { object } = intersects[0];
-        if (object.geometry.isBongo && !object.geometry.isHit && !object.geometry.startingBongo) {
+        if (object.geometry.isBongo && !object.geometry.isHit && !object.geometry.startingBongo && !state.gameOver) {
           object.geometry.isHit = true;
           const oldScore = parseInt(scoreText.geometry.text);
           scene.remove(scoreText);
           incrementScore(oldScore);
-        } else if (object.geometry.isChicken && !object.geometry.isHit && !object.geometry.startingBongo) {
+        } else if (object.geometry.isChicken && !object.geometry.isHit && !object.geometry.startingBongo && !state.gameOver) {
           object.geometry.isHit = true;
           state.chickensHit = state.chickensHit + 1;
           
           chickenTexts[state.chickensHit - 1].position.setZ(chickenTexts[state.chickensHit - 1].position.z + 4);
 
-        } else if(object.geometry.isBongo && !object.geometry.isHit && object.geometry.startingBongo) {
+        } else if(object.geometry.isBongo && !object.geometry.isHit && object.geometry.startingBongo && state.gameOver) {
           const startingDisplayBongo = displayBongos[centerBongoIdx];
           object.geometry.isHit = true;
           object.geometry.startingBongo = false;
           const { y } = object.position;
           const animDuration = 0.5;
+          state.gameOver = false;
 
           resetChickens();
 
