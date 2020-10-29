@@ -1,16 +1,16 @@
 import * as THREE from "three";
-import createBongo from "./createBongo.js";
-import createText from "./createText.js";
-import toggleBongo from "./toggleBongo.js";
+import GLTFLoader from 'three-gltf-loader';
 import { gsap } from "gsap";
+
+import createText from "./createText.js";
+import createBongo from "./createBongo.js";
+import toggleBongo from "./toggleBongo.js";
 import createChicken from "./createChicken.js";
 import toggleChicken from "./toggleChicken.js";
-import GLTFLoader from 'three-gltf-loader';
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
 const raycaster = new THREE.Raycaster();
-const mouseRaycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 const manager = new THREE.LoadingManager();
 const fontLoader = new THREE.FontLoader(manager);
@@ -22,6 +22,7 @@ renderer.setSize( window.innerWidth, window.innerHeight );
 renderer.setClearColor("#e5e5e5");
 document.body.appendChild( renderer.domElement );
 
+console.log("Latest");
 
 window.addEventListener("resize", () => {
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -31,12 +32,8 @@ window.addEventListener("resize", () => {
 })
 
 const light = new THREE.PointLight(0xffffff, 5, 500);
-// Same as camera?
 light.position.set(0, 200, 25);
 scene.add(light);
-
-// const ambientLight = new THREE.AmbientLight(0xffffff);
-// scene.add(ambientLight);
 
 // Whack a bongo table dimensions
 // height is actually y, y is z
@@ -56,9 +53,7 @@ fontLoader.load( 'fonts/helvetiker_regular.typeface.json', (res) => {
   helveticaFont = res;
 });
 
-// Use manager to start game after loaded
 let scoreText;
-let gameRestartText;
 let chickenTexts = [];
 const scoreTextFontSize = 14;
 const scoreTextColor = 0xffffff;
@@ -131,12 +126,6 @@ manager.onLoad = function () {
     scene.add(chicken);
   })
 
-  // Game over text
-  // gameRestartText = createText("Game over!", helveticaFont, 10, scoreTextSize, scoreTextColor);
-  // gameRestartText.position.set(0, boxDimensions.height + 12.5, -boxDimensions.y - 2);
-  // scene.add(gameRestartText);
-
-  // Attach event listener for click
   attachClickEventListener();
 
   // Game start
@@ -174,9 +163,6 @@ modelLoader.load("assets/blender/BongoSmoller.glb", (bongoScene) => {
 
   xyPos.forEach(({ x, z }) => {
     const bongo = bongoModel.clone(true);
-    // const bongo = new THREE.Mesh(bongoModel.geometry.clone(), bongoModel.material.clone());
-    // bongo.geometry.isBongo = true;
-    // bongo.geometry.isHit = true;
     bongo.geometry.isDisplay = true;
     bongo.position.set(x, boxDimensions.height / 2 + boxCenter.y + 1 - travelDist, z);
     bongo.visible = false;
@@ -187,20 +173,16 @@ modelLoader.load("assets/blender/BongoSmoller.glb", (bongoScene) => {
 })
 
 let chickenModel;
+// This is extremely inefficient, but will make do for now
 modelLoader.load("assets/blender/ChickenSmoller.glb", (chickenScene) => {
   chickenModel = chickenScene.scene.children.filter(({userData}) => userData.name === "Bongo")[0];
 
   xyPos.forEach(({ x, z }) => {
-    // This is extremely inefficient, but will make do for now
     const chicken = chickenModel.clone(true);
-    // const chicken = new THREE.Mesh(chickenModel.geometry.clone(), chickenModel.material.clone());
-    // chicken.geometry.isChicken = true;
-    // chicken.geometry.isHit = true;
     chicken.geometry.isDisplay = true;
     chicken.position.set(x, boxDimensions.height / 2 + boxCenter.y + 1 - travelDist, z);
     chicken.visible = false;
     chicken.scale.set(100, 100, 100);
-    // chicken.rotateZ(Math.PI);
     displayChickens.push(chicken);
     scene.add(chicken);
   })
@@ -220,9 +202,7 @@ xyPos.forEach(({ x, z }) => {
 
 // Camera
 const cameraLookPos = new THREE.Vector3(0, boxDimensions.height - 5, -boxDimensions.y + 25);
-// camera.position.set(0, 125, 25);
 camera.position.set(0, 140, 20);
-// camera.lookAt(0, 0, boxCenter.z);
 camera.lookAt(cameraLookPos);
 
 const popUpTime = 750;
@@ -239,7 +219,6 @@ function animate() {
     if (state.chickensHit === 3) {
       state.activeGame = false;
       state.prepareGame = true;
-      // displayGameOver();
     } else {
       activateBongo();
       activateChicken();
@@ -260,7 +239,7 @@ function placeStarterBongo() {
   const displayBongo = displayBongos[centerBongoIdx];
 
   bongo.geometry.startingBongo = true;
-  const { x, y, z } = bongo.position;
+  const { y } = bongo.position;
   const animDuration = 0.5;
   const initY = boxDimensions.height / 2 + boxCenter.y + 1 - travelDist;
   
@@ -269,7 +248,6 @@ function placeStarterBongo() {
     bongo.position.setY(initY);
     displayBongo.position.setY(initY);
     
-    // bongo.material.opacity = 1;
     bongo.visible = true;
     displayBongo.visible = true;
     
@@ -287,12 +265,6 @@ function placeStarterBongo() {
       ease: "expo.out"
     }).delay(1)
   }, popUpTime);
-
-  // gsap.to(bongo.material, {
-  //   duration: animDuration,
-  //   opacity: 1,
-  //   ease: "expo.out"
-  // }).delay(1);
 }
 
 let activeHoleIdx = [];
@@ -343,14 +315,6 @@ function incrementScore(oldScore) {
   scene.add(scoreText);
 }
 
-// function displayGameOver() {
-//   gameRestartText.position.set(0, boxDimensions.height + 12.5, -boxDimensions.y);
-// }
-
-// function resetGameOver() {
-//   gameRestartText.position.set(0, boxDimensions.height + 12.5, -boxDimensions.y - 2);
-// }
-
 function resetChickens() {
   chickenTexts.forEach((chicken, idx) => {
     let x = chickensX[idx];
@@ -362,113 +326,32 @@ function resetChickens() {
 
 function resetScore() {
   scene.remove(scoreText);
-  // Probably find a way to refactor this
   scoreText = createText("0", helveticaFont, scoreTextFontSize, scoreTextSize, scoreTextColor);
   scoreText.position.set(0, boxDimensions.height + 32.5, -boxDimensions.y);
   scene.add(scoreText);
 }
 
 function attachClickEventListener() {
-  // Hammer, maybe make this with JS/CSS/HTML instead
-  // const hammerGeometry = new THREE.PlaneGeometry(25, 25);
-  // const hammerUpMaterial = new THREE.MeshLambertMaterial({
-  //   map: textureLoader.load("assets/images/hammerUp.png"),
-  //   transparent: true
-  // });
-  // const hammerDownMaterial = new THREE.MeshLambertMaterial({
-  //   map: textureLoader.load("assets/images/hammerDown.png"),
-  //   transparent: true
-  // });
-
-  // const mouseUpMesh = new THREE.Mesh(hammerGeometry, hammerUpMaterial);
-  // const mouseDownMesh = new THREE.Mesh(hammerGeometry, hammerDownMaterial);
-  // mouseDownMesh.material.opacity = 0;
-
-  // mouseUpMesh.geometry.isMouse = true;
-  // mouseDownMesh.geometry.isMouse = true;
-
-  // scene.add(mouseUpMesh);
-  // scene.add(mouseDownMesh);
   scene.add(mallet);
   mallet.scale.set(100, 100, 100);
   mallet.rotateX(Math.PI / 8);
   mallet.rotateY(-3 * Math.PI / 16);
   mallet.rotateZ(-Math.PI / 8);
 
-  document.addEventListener("mousedown", () => {
-    // mouseUpMesh.material.opacity = 0;
-    // mouseDownMesh.material.opacity = 1;
-  })
-
-  document.addEventListener("mouseup", () => {
-    // mouseUpMesh.material.opacity = 1;
-    // mouseDownMesh.material.opacity = 0;
-  })
-
   document.addEventListener("mousemove", (e) => {
     mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
     mouse.y = - (e.clientY / window.innerHeight) * 2 + 1;
     
-    // Make it locked to zx plane
-    // Window plane, e.g. yx plane
     const vector = new THREE.Vector3(mouse.x, mouse.y, ( camera.near + camera.far ) / ( camera.near - camera.far ));
-    // console.log("vector: ", vector);
-    // Position of vector in the world
-    // Use known camera position vector (position and look at)
     vector.unproject( camera );
-    // console.log("Unproject vector: ", vector);
-    // const vectorToCamLook = vector.clone().add(cameraVector);
-    // console.log("vectorToCam: ", vectorToCamLook);
-    // console.log("Camera vector: ", cameraVector);
-    // console.log("vector normalize", vectorToCamLook.clone().normalize());
-
-    // Draw a line from pointA in the given direction at distance 100
-    // var pointA = vector.clone();
-    // var direction = vectorToCamLook.clone();
-    // direction.normalize();
-
-    // var distance = 100; // at what distance to determine pointB
-
-    // var pointB = new THREE.Vector3();
-    // pointB.addVectors ( pointA, direction.multiplyScalar( distance ) );
-
-    // var geometry = new THREE.Geometry();
-    // geometry.vertices.push( pointA );
-    // geometry.vertices.push( pointB );
-    // var material = new THREE.LineBasicMaterial( { color : 0xff0000 } );
-    // var line = new THREE.Line( geometry, material );
-    // console.log(pointB);
-    // scene.add( line );
-
-    // const mouseRay = new THREE.Ray(vector, vectorToCamLook.clone().normalize());
-
-    // const xzPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
-
-    // const planeIntersect = mouseRay.intersectPlane(xzPlane, vector);
-    // console.log("Plane intersect: ", planeIntersect);
-
-
-    // console.log("vector (unproject): ", vector);
-    // const dir = vector.sub( camera.position ).normalize();
-    // const distance = - camera.position.z / dir.z;
-    // let pos = camera.position.clone().add( dir.multiplyScalar( distance ) );
-    // pos.y = 80;
-    // mallet.position.copy(pos);
-    // scene.remove(machineModel);
-    // mallet.position.set(pointB.x, pointB.y, pointB.z);
-    // console.log(mallet.position);
-    // mouseDownMesh.position.copy(pos);
 
     const xzPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -boxDimensions.height - travelDist - 5);
     raycaster.setFromCamera(mouse, camera);
     const planeIntersect = raycaster.ray.intersectPlane(xzPlane, vector);
-    // console.log(raycaster.ray.direction);
-    // console.log("intersect: ", planeIntersect);
+
     mallet.position.set(planeIntersect.x, planeIntersect.y, planeIntersect.z);
-    // console.log(mallet.position);
   })
 
-  // Spam clicking will break the game (score), I'm not entirely sure why
   document.addEventListener("click", 
     (e) => {
       mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
@@ -477,44 +360,27 @@ function attachClickEventListener() {
       raycaster.setFromCamera(mouse, camera);
 
       const intersects = raycaster.intersectObjects(scene.children).filter(({ object }) => !(object.geometry.isMouse || object.geometry.isDisplay));
-      // console.log(intersects.map((intersect) => intersect.object.geometry.isHit));
       if (intersects.length > 0) {
         const { object } = intersects[0];
         if (object.geometry.isBongo && !object.geometry.isHit && !object.geometry.startingBongo) {
           object.geometry.isHit = true;
-          // Get existing score, parseint + 1, make new score
           const oldScore = parseInt(scoreText.geometry.text);
           scene.remove(scoreText);
           incrementScore(oldScore);
-          // TODO: Add sound or something on successful hit
-          // object.material.color.setHex(0x00ffff);
-          // window.setTimeout(() => {
-          //   object.material.color.setHex(0x00ff00);
-          // }, 300);
         } else if (object.geometry.isChicken && !object.geometry.isHit && !object.geometry.startingBongo) {
           object.geometry.isHit = true;
-          // Handle lose condition
           state.chickensHit = state.chickensHit + 1;
           
           chickenTexts[state.chickensHit - 1].position.setZ(chickenTexts[state.chickensHit - 1].position.z + 4);
 
-          // object.material.color.setHex(0xff0000);
-          // window.setTimeout(() => {
-          //   object.material.color.setHex(0xff1111);
-          // }, 300);
         } else if(object.geometry.isBongo && !object.geometry.isHit && object.geometry.startingBongo) {
           const startingDisplayBongo = displayBongos[centerBongoIdx];
           object.geometry.isHit = true;
           object.geometry.startingBongo = false;
-          const { x, y, z } = object.position;
+          const { y } = object.position;
           const animDuration = 0.5;
 
           resetChickens();
-
-          // object.material.color.setHex(0x00ffff);
-          // window.setTimeout(() => {
-          //   object.material.color.setHex(0x00ff00);
-          // }, 300);
 
           gsap.to(object.position, {
             duration: animDuration,
@@ -528,16 +394,7 @@ function attachClickEventListener() {
             ease: "expo.out"
           }).then(() => startingDisplayBongo.visible = false);
 
-          // gsap.to(object.material, {
-          //   duration: animDuration,
-          //   opacity: 0,
-          //   ease: "expo.out"
-          // });
-
           resetScore();
-          // resetGameOver();
-
-          // Short delay before starting game
           window.setTimeout(() => {
             state.activeGame = true;
           }, 750)
