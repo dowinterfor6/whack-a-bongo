@@ -172,7 +172,7 @@ const displayChickens = [];
 const displayBongos = [];
 
 let bongoModel;
-modelLoader.load("assets/blender/Bongo.glb", (bongoScene) => {
+modelLoader.load("assets/blender/BongoSmoller.glb", (bongoScene) => {
   bongoModel = bongoScene.scene.children.filter(({userData}) => userData.name === "Bongo")[0];
 
   xyPos.forEach(({ x, z }) => {
@@ -190,7 +190,7 @@ modelLoader.load("assets/blender/Bongo.glb", (bongoScene) => {
 })
 
 let chickenModel;
-modelLoader.load("assets/blender/Chicken.glb", (chickenScene) => {
+modelLoader.load("assets/blender/ChickenSmoller.glb", (chickenScene) => {
   chickenModel = chickenScene.scene.children.filter(({userData}) => userData.name === "Bongo")[0];
 
   xyPos.forEach(({ x, z }) => {
