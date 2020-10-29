@@ -17,9 +17,6 @@ const fontLoader = new THREE.FontLoader(manager);
 const textureLoader = new THREE.TextureLoader();
 const modelLoader = new GLTFLoader(manager);
 
-// const axesHelper = new THREE.AxesHelper( 100 );
-// scene.add( axesHelper );
-
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize( window.innerWidth, window.innerHeight );
 renderer.setClearColor("#e5e5e5");
