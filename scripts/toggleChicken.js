@@ -21,6 +21,7 @@ const toggleChicken = (chicken, travelDist, popUpTime) => {
   // })
   
   window.setTimeout(() => {
+    chicken.geometry.isHit = true;
     gsap.to(chicken.position, {
       duration: animDuration,
       y: y,
@@ -36,9 +37,9 @@ const toggleChicken = (chicken, travelDist, popUpTime) => {
     // })
   }, popUpTime);
 
-  window.setTimeout(() => {
-    chicken.geometry.isHit = false;
-  }, popUpTime + animDuration * 1000);
+  // window.setTimeout(() => {
+  //   chicken.geometry.isHit = false;
+  // }, popUpTime + animDuration * 1000);
 }
 
 export default toggleChicken;

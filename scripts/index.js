@@ -17,8 +17,8 @@ const fontLoader = new THREE.FontLoader(manager);
 const textureLoader = new THREE.TextureLoader();
 const modelLoader = new GLTFLoader(manager);
 
-const axesHelper = new THREE.AxesHelper( 100 );
-scene.add( axesHelper );
+// const axesHelper = new THREE.AxesHelper( 100 );
+// scene.add( axesHelper );
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize( window.innerWidth, window.innerHeight );
@@ -160,15 +160,16 @@ const bongos = [];
 const bongoDimensions = { w: 13, h: 13, d: 13 };
 const travelDist = bongoDimensions.h;
 
-// xyPos.forEach(({ x, z }) => {
-//   const bongo = createBongo(bongoDimensions.w, bongoDimensions.h, bongoDimensions.d, 0x00ff00);
-//   bongo.position.set(x, boxDimensions.height / 2 + boxCenter.y + 1 - travelDist, z);
-//   bongo.material.opacity = 0;
-//   bongos.push(bongo);
-//   scene.add(bongo);
-// })
+xyPos.forEach(({ x, z }) => {
+  const bongo = createBongo(bongoDimensions.w, bongoDimensions.h, bongoDimensions.d, 0x00ff00);
+  bongo.position.set(x, boxDimensions.height / 2 + boxCenter.y + 1 - travelDist, z);
+  bongo.material.opacity = 0;
+  bongos.push(bongo);
+  scene.add(bongo);
+})
 
-const chickens = [];
+const displayChickens = [];
+const displayBongos = [];
 
 let bongoModel;
 modelLoader.load("assets/blender/Bongo.glb", (bongoScene) => {
@@ -177,12 +178,13 @@ modelLoader.load("assets/blender/Bongo.glb", (bongoScene) => {
   xyPos.forEach(({ x, z }) => {
     const bongo = bongoModel.clone(true);
     // const bongo = new THREE.Mesh(bongoModel.geometry.clone(), bongoModel.material.clone());
-    bongo.geometry.isBongo = true;
-    bongo.geometry.isHit = true;
+    // bongo.geometry.isBongo = true;
+    // bongo.geometry.isHit = true;
+    bongo.geometry.isDisplay = true;
     bongo.position.set(x, boxDimensions.height / 2 + boxCenter.y + 1 - travelDist, z);
     bongo.visible = false;
     bongo.scale.set(100, 100, 100);
-    bongos.push(bongo);
+    displayBongos.push(bongo);
     scene.add(bongo);
   })
 })
@@ -195,28 +197,29 @@ modelLoader.load("assets/blender/Chicken.glb", (chickenScene) => {
     // This is extremely inefficient, but will make do for now
     const chicken = chickenModel.clone(true);
     // const chicken = new THREE.Mesh(chickenModel.geometry.clone(), chickenModel.material.clone());
-    chicken.geometry.isChicken = true;
-    chicken.geometry.isHit = true;
+    // chicken.geometry.isChicken = true;
+    // chicken.geometry.isHit = true;
+    chicken.geometry.isDisplay = true;
     chicken.position.set(x, boxDimensions.height / 2 + boxCenter.y + 1 - travelDist, z);
     chicken.visible = false;
     chicken.scale.set(100, 100, 100);
     // chicken.rotateZ(Math.PI);
-    chickens.push(chicken);
+    displayChickens.push(chicken);
     scene.add(chicken);
   })
 })
 
 // Chickens
-// const chickens = [];
-// const chickenDimensions = { w: 13, h: 13, d: 13 };
+const chickens = [];
+const chickenDimensions = { w: 13, h: 13, d: 13 };
 
-// xyPos.forEach(({ x, z }) => {
-//   const chicken = createChicken(chickenDimensions.w, chickenDimensions.h, chickenDimensions.d, 0xff1111);
-//   chicken.position.set(x, boxDimensions.height / 2 + boxCenter.y + 1 - travelDist, z);
-//   chicken.material.opacity = 0;
-//   chickens.push(chicken);
-//   scene.add(chicken);
-// })
+xyPos.forEach(({ x, z }) => {
+  const chicken = createChicken(chickenDimensions.w, chickenDimensions.h, chickenDimensions.d, 0xff1111);
+  chicken.position.set(x, boxDimensions.height / 2 + boxCenter.y + 1 - travelDist, z);
+  chicken.material.opacity = 0;
+  chickens.push(chicken);
+  scene.add(chicken);
+})
 
 // Camera
 const cameraLookPos = new THREE.Vector3(0, boxDimensions.height - 5, -boxDimensions.y + 25);
@@ -253,8 +256,12 @@ function animate() {
 	renderer.render( scene, camera );
 }
 
+const centerBongoIdx = Math.floor(bongos.length / 2);
+
 function placeStarterBongo() { 
-  const bongo = bongos[Math.floor(bongos.length / 2)];
+  const bongo = bongos[centerBongoIdx];
+  const displayBongo = displayBongos[centerBongoIdx];
+
   bongo.geometry.startingBongo = true;
   const { x, y, z } = bongo.position;
   const animDuration = 0.5;
@@ -263,8 +270,11 @@ function placeStarterBongo() {
   // To prevent any existing gsap animation to conflict
   window.setTimeout(() => {
     bongo.position.setY(initY);
+    displayBongo.position.setY(initY);
     
+    // bongo.material.opacity = 1;
     bongo.visible = true;
+    displayBongo.visible = true;
     
     gsap.to(bongo.position, {
       duration: animDuration,
@@ -273,6 +283,12 @@ function placeStarterBongo() {
     }).delay(1).then(() => {
       bongo.geometry.isHit = false;
     })
+
+    gsap.to(displayBongo.position, {
+      duration: animDuration,
+      y: y + travelDist,
+      ease: "expo.out"
+    }).delay(1)
   }, popUpTime);
 
   // gsap.to(bongo.material, {
@@ -292,6 +308,7 @@ function activateBongo() {
       randIdx = Math.round(Math.random() * (bongos.length - 1));
     }
     const randBongo = bongos[randIdx];
+    const randDisplayBongo = displayBongos[randIdx];
 
     activeHoleIdx.push(randIdx);
     window.setTimeout(() => {
@@ -299,6 +316,7 @@ function activateBongo() {
     }, popUpTime + 1000); // Buffer time between popup
 
     toggleBongo(randBongo, travelDist, popUpTime);
+    toggleBongo(randDisplayBongo, travelDist, popUpTime);
   };
 }
 
@@ -310,6 +328,7 @@ function activateChicken() {
       randIdx = Math.round(Math.random() * (chickens.length - 1));
     }
     const randChicken = chickens[randIdx];
+    const randDisplayChicken = displayChickens[randIdx];
 
     activeHoleIdx.push(randIdx);
     window.setTimeout(() => {
@@ -317,6 +336,7 @@ function activateChicken() {
     }, popUpTime + 1000); // Buffer time between popup
 
     toggleChicken(randChicken, travelDist, popUpTime);
+    toggleChicken(randDisplayChicken, travelDist, popUpTime);
   };
 }
 
@@ -445,10 +465,10 @@ function attachClickEventListener() {
     const xzPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -boxDimensions.height - travelDist - 5);
     raycaster.setFromCamera(mouse, camera);
     const planeIntersect = raycaster.ray.intersectPlane(xzPlane, vector);
-    console.log(raycaster.ray.direction);
-    console.log("intersect: ", planeIntersect);
+    // console.log(raycaster.ray.direction);
+    // console.log("intersect: ", planeIntersect);
     mallet.position.set(planeIntersect.x, planeIntersect.y, planeIntersect.z);
-    console.log(mallet.position);
+    // console.log(mallet.position);
   })
 
   // Spam clicking will break the game (score), I'm not entirely sure why
@@ -459,7 +479,7 @@ function attachClickEventListener() {
 
       raycaster.setFromCamera(mouse, camera);
 
-      const intersects = raycaster.intersectObjects(scene.children).filter((intersect) => !intersect.object.geometry.isMouse);
+      const intersects = raycaster.intersectObjects(scene.children).filter(({ object }) => !(object.geometry.isMouse || object.geometry.isDisplay));
       // console.log(intersects.map((intersect) => intersect.object.geometry.isHit));
       if (intersects.length > 0) {
         const { object } = intersects[0];
@@ -486,6 +506,7 @@ function attachClickEventListener() {
           //   object.material.color.setHex(0xff1111);
           // }, 300);
         } else if(object.geometry.isBongo && !object.geometry.isHit && object.geometry.startingBongo) {
+          const startingDisplayBongo = displayBongos[centerBongoIdx];
           object.geometry.isHit = true;
           object.geometry.startingBongo = false;
           const { x, y, z } = object.position;
@@ -503,6 +524,12 @@ function attachClickEventListener() {
             y: y - travelDist,
             ease: "expo.out"
           }).then(() => object.visible = false);
+
+          gsap.to(startingDisplayBongo.position, {
+            duration: animDuration,
+            y: y - travelDist,
+            ease: "expo.out"
+          }).then(() => startingDisplayBongo.visible = false);
 
           // gsap.to(object.material, {
           //   duration: animDuration,

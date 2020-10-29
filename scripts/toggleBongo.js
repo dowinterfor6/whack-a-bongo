@@ -11,7 +11,7 @@ const toggleBongo = (bongo, travelDist, popUpTime) => {
     y: y + travelDist,
     ease: "expo.out"
   }).then(() => {
-      bongo.geometry.isHit = false;
+    bongo.geometry.isHit = false;
   })
 
   // gsap.to(bongo.material, {
@@ -21,6 +21,7 @@ const toggleBongo = (bongo, travelDist, popUpTime) => {
   // })
   
   window.setTimeout(() => {
+    bongo.geometry.isHit = true;
     gsap.to(bongo.position, {
       duration: animDuration,
       y: y,
@@ -36,9 +37,9 @@ const toggleBongo = (bongo, travelDist, popUpTime) => {
     // })
   }, popUpTime);
 
-  window.setTimeout(() => {
-    bongo.geometry.isHit = false;
-  }, popUpTime + animDuration * 1000);
+  // window.setTimeout(() => {
+  //   bongo.geometry.isHit = false;
+  // }, popUpTime + animDuration * 1000);
 }
 
 export default toggleBongo;
